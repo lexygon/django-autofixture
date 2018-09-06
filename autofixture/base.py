@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import warnings
-from django.db.models import fields, ImageField
+from django.db.models import fields, ImageField, QuerySet
 from django.conf import settings
 from django.db.models.fields import related
 from django.utils.six import with_metaclass
@@ -407,7 +407,10 @@ class AutoFixtureBase(object):
         value = self.get_value(field)
         if value is self.IGNORE_FIELD:
             return
-        setattr(instance, field.name, value)
+        if type(value) == QuerySet:
+            getattr(instance, field.name)(*value)
+        else:
+            setattr(instance, field.name, value)
 
     def process_m2m(self, instance, field):
         # check django's version number to determine how intermediary models
