@@ -408,7 +408,7 @@ class AutoFixtureBase(object):
         if value is self.IGNORE_FIELD:
             return
         if type(value) == QuerySet:
-            getattr(instance, field.name)(*value)
+            getattr(instance, field.name).add(*value)
         else:
             setattr(instance, field.name, value)
 
