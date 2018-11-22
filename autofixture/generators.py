@@ -3,7 +3,7 @@ import datetime
 import uuid
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.contrib.gis.geos import Point
+
 try:
     from django.utils import lorem_ipsum
 except ImportError:
@@ -16,12 +16,10 @@ import string
 import sys
 from decimal import Decimal
 
-
 if sys.version_info[0] < 3:
     str_ = unicode
 else:
     str_ = str
-
 
 # backporting os.path.relpath, only availabe in python >= 2.6
 try:
@@ -39,7 +37,7 @@ except AttributeError:
         # Work out how much of the filepath is shared by start and path.
         i = len(os.path.commonprefix([start_list, path_list]))
 
-        rel_list = [os.path.pardir] * (len(start_list)-i) + path_list[i:]
+        rel_list = [os.path.pardir] * (len(start_list) - i) + path_list[i:]
         if not rel_list:
             return os.curdir
         return os.path.join(*rel_list)
@@ -246,7 +244,7 @@ class BooleanGenerator(ChoicesGenerator):
     def __init__(self, none=False, *args, **kwargs):
         values = (True, False)
         if none:
-            values = values + (None,)
+            values = values + (None, )
         super(BooleanGenerator, self).__init__(values=values, *args, **kwargs)
 
 
@@ -292,7 +290,6 @@ class DateGenerator(Generator):
         days = random.randint(0, diff.days)
         date = self.min_date + datetime.timedelta(days=days)
         return date
-        return datetime.date(date.year, date.month, date.day)
 
 
 class DecimalGenerator(Generator):
@@ -311,8 +308,8 @@ class DecimalGenerator(Generator):
     def generate(self):
         maxint = 10 ** self.max_digits - 1
         value = (
-            Decimal(random.randint(-maxint, maxint)) /
-            10 ** self.decimal_places)
+                Decimal(random.randint(-maxint, maxint)) /
+                10 ** self.decimal_places)
         return value
 
 
@@ -320,8 +317,8 @@ class PositiveDecimalGenerator(DecimalGenerator):
     def generate(self):
         maxint = 10 ** self.max_digits - 1
         value = (
-            Decimal(random.randint(0, maxint)) /
-            10 ** self.decimal_places)
+                Decimal(random.randint(0, maxint)) /
+                10 ** self.decimal_places)
         return value
 
 
@@ -369,6 +366,7 @@ class LastNameGenerator(Generator):
     def generate(self):
         return random.choice(self.surname)
 
+
 class FullNameGenerator(Generator):
     """ Generates a full name joining FirstName and LastName """
 
@@ -401,7 +399,7 @@ class EmailGenerator(StringGenerator):
         else:
             maxl -= len(self.static_domain)
 
-        name = StringGenerator(self.chars, min_length=1, max_length=maxl-1).generate()
+        name = StringGenerator(self.chars, min_length=1, max_length=maxl - 1).generate()
         maxl -= len(name)
 
         if self.static_domain is None:
@@ -417,7 +415,7 @@ class URLGenerator(StringGenerator):
     tlds = ()
 
     def __init__(self, chars=None, max_length=30, protocol=None, tlds=None,
-        *args, **kwargs):
+                 *args, **kwargs):
         if chars is not None:
             self.chars = chars
         if protocol is not None:
@@ -425,21 +423,21 @@ class URLGenerator(StringGenerator):
         if tlds is not None:
             self.tlds = tlds
         assert max_length > (
-            len(self.protocol) + len('://') +
-            1 + len('.') +
-            max([2] + [len(tld) for tld in self.tlds if tld]))
+                len(self.protocol) + len('://') +
+                1 + len('.') +
+                max([2] + [len(tld) for tld in self.tlds if tld]))
         super(URLGenerator, self).__init__(
             chars=self.chars, max_length=max_length, *args, **kwargs)
 
     def generate(self):
-        maxl = self.max_length - len(self.protocol) - 4 # len(://) + len(.)
+        maxl = self.max_length - len(self.protocol) - 4  # len(://) + len(.)
         if self.tlds:
             tld = random.choice(self.tlds)
             maxl -= len(tld)
         else:
             tld_max_length = 3 if maxl >= 5 else 2
             tld = StringGenerator(self.chars,
-                min_length=2, max_length=tld_max_length).generate()
+                                  min_length=2, max_length=tld_max_length).generate()
             maxl -= len(tld)
         domain = StringGenerator(chars=self.chars, max_length=maxl).generate()
         return u'%s://%s.%s' % (self.protocol, domain, tld)
@@ -462,9 +460,9 @@ class TimeGenerator(Generator):
 
     def generate(self):
         return u'%02d:%02d:%02d' % (
-            random.randint(0,23),
-            random.randint(0,59),
-            random.randint(0,59),
+            random.randint(0, 23),
+            random.randint(0, 59),
+            random.randint(0, 59),
         )
 
 
@@ -493,7 +491,7 @@ class FilePathGenerator(Generator):
                 for f in os.listdir(self.path):
                     full_file = os.path.join(self.path, f)
                     if os.path.isfile(full_file) and \
-                        (self.match is None or match_re.search(f)):
+                            (self.match is None or match_re.search(f)):
                         filenames.append(full_file)
             except OSError:
                 pass
@@ -508,6 +506,7 @@ class MediaFilePathGenerator(FilePathGenerator):
     ``settings.MEDIA_ROOT``. The returned filename is relative to
     ``MEDIA_ROOT``.
     '''
+
     def __init__(self, path='', *args, **kwargs):
         from django.conf import settings
         path = os.path.join(settings.MEDIA_ROOT, path)
@@ -529,13 +528,14 @@ class InstanceGenerator(Generator):
         fieldname__exact: value
         fieldname__iexact: value
     '''
+
     def __init__(self, autofixture, limit_choices_to=None, *args, **kwargs):
         self.autofixture = autofixture
         limit_choices_to = limit_choices_to or {}
         for lookup, value in limit_choices_to.items():
             bits = lookup.split('__')
             if len(bits) == 1 or \
-                len(bits) == 2 and bits[1] in ('exact', 'iexact'):
+                    len(bits) == 2 and bits[1] in ('exact', 'iexact'):
                 self.autofixture.add_field_value(bits[0], StaticGenerator(value))
         super(InstanceGenerator, self).__init__(*args, **kwargs)
 
@@ -566,7 +566,7 @@ class InstanceSelector(Generator):
     empty_value = []
 
     def __init__(self, queryset, min_count=None, max_count=None, fallback=None,
-        limit_choices_to=None, *args, **kwargs):
+                 limit_choices_to=None, *args, **kwargs):
         from django.db.models.query import QuerySet
         if not isinstance(queryset, QuerySet):
             queryset = queryset._default_manager.all()
@@ -588,6 +588,7 @@ class InstanceSelector(Generator):
             count = random.randint(min_count, self.max_count)
             return self.queryset.order_by('?')[:count]
 
+
 class WeightedGenerator(Generator):
     """
     Takes a list of generator objects and integer weights, of the following form:
@@ -603,12 +604,13 @@ class WeightedGenerator(Generator):
         r = random.uniform(0, total)
         upto = 0
         for c, w in choices:
-          if upto + w > r:
-             return c
-          upto += w
+            if upto + w > r:
+                return c
+            upto += w
 
     def generate(self):
         return self.weighted_choice(self.choices).generate()
+
 
 class ImageGenerator(Generator):
     '''
@@ -617,9 +619,9 @@ class ImageGenerator(Generator):
     '''
 
     default_sizes = (
-        (100,100),
-        (200,300),
-        (400,600),
+        (100, 100),
+        (200, 300),
+        (400, 600),
     )
 
     def __init__(self, width=None, height=None, sizes=None,
@@ -635,7 +637,7 @@ class ImageGenerator(Generator):
 
     def generate_file_path(self, width, height, suffix=None):
         suffix = suffix if suffix is not None else ''
-        filename ='{width}x{height}{suffix}.png'.format(
+        filename = '{width}x{height}{suffix}.png'.format(
             width=width, height=height, suffix=suffix)
         return os.path.join(self.path, filename)
 
@@ -667,10 +669,14 @@ class UUIDGenerator(Generator):
         return uuid.uuid4()
 
 
-# Geo
-class PointFieldGenerator(Generator):
+if 'django.contrib.gis' in settings.INSTALLED_APPS:
+    from django.contrib.gis.geos import Point
 
-    def generate(self):
-        latitude = random.uniform(-90, 90)
-        longitude = random.uniform(-180, 180)
-        return Point(longitude, latitude)
+
+    # Geo
+    class PointFieldGenerator(Generator):
+
+        def generate(self):
+            latitude = random.uniform(-90, 90)
+            longitude = random.uniform(-180, 180)
+            return Point(longitude, latitude)
