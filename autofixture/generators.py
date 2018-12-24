@@ -661,6 +661,15 @@ class ImageGenerator(Generator):
         )
 
 
+class ExistingImageGenerator(Generator):
+    file_format = 'jpeg'
+    iteration_count = 40
+
+    def generate(self):
+        names = ['{}.{}'.format(x, self.file_format) for x in range(self.iteration_count)]
+        return random.choice(names)
+
+
 class UUIDGenerator(Generator):
     '''
     Generates random uuid4.

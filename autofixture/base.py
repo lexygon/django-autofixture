@@ -118,7 +118,7 @@ class AutoFixtureBase(object):
         (fields.GenericIPAddressField, generators.IPAddressGenerator),
         (fields.TextField, generators.LoremGenerator),
         (fields.TimeField, generators.TimeGenerator),
-        (ImageField, generators.ImageGenerator),
+        (ImageField, generators.ExistingImageGenerator),
     ))
 
     # UUIDField was added in Django 1.8
@@ -137,7 +137,7 @@ class AutoFixtureBase(object):
     def __init__(self, model,
             field_values=None, none_p=None, overwrite_defaults=None,
             constraints=None, follow_fk=None, generate_fk=None,
-            follow_m2m=None, generate_m2m=None):
+            follow_m2m=None, generate_m2m=None, create_image=False):
         '''
         Parameters:
             ``model``: A model class which is used to create the test data.
@@ -217,6 +217,9 @@ class AutoFixtureBase(object):
             self.generate_m2m = generate_m2m
         if not isinstance(self.generate_m2m, Link):
             self.generate_m2m = Link(self.generate_m2m)
+
+        if create_image:
+            self.field_to_generator[ImageField] = generators.ImageGenerator
 
         for constraint in self.default_constraints:
             self.add_constraint(constraint)
