@@ -183,6 +183,8 @@ class AutoFixtureBase(object):
         self.field_values = Values(self.__class__.field_values)
         self.field_values += Values(field_values)
         self.constraints = constraints or []
+        self.create_image = create_image
+
         if none_p is not None:
             self.none_p = none_p
         if overwrite_defaults is not None:
@@ -387,7 +389,10 @@ class AutoFixtureBase(object):
                     max_value=field.MAX_BIGINT,
                     **kwargs)
         if isinstance(field, ImageField):
-            return generators.ImageGenerator(storage=field.storage, **kwargs)
+            if self.create_image:
+                return generators.ImageGenerator(storage=field.storage, **kwargs)
+            else:
+                return generators.ExistingImageGenerator
         for field_class, generator in self.field_to_generator.items():
             if isinstance(field, field_class):
                 return generator(**kwargs)
