@@ -664,9 +664,10 @@ class ImageGenerator(Generator):
 class ExistingImageGenerator(Generator):
     file_format = 'jpeg'
     iteration_count = 40
+    prefix = '_autofixture'
 
     def generate(self):
-        names = ['{}.{}'.format(x, self.file_format) for x in range(self.iteration_count)]
+        names = ['{}/{}.{}'.format(self.prefix, x, self.file_format) for x in range(self.iteration_count)]
         return random.choice(names)
 
 
