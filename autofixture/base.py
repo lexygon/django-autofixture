@@ -118,7 +118,7 @@ class AutoFixtureBase(object):
         (fields.GenericIPAddressField, generators.IPAddressGenerator),
         (fields.TextField, generators.LoremGenerator),
         (fields.TimeField, generators.TimeGenerator),
-        (ImageField, generators.ExistingImageGenerator),
+        (ImageField, generators.ImageGenerator),
     ))
 
     # UUIDField was added in Django 1.8
@@ -137,7 +137,7 @@ class AutoFixtureBase(object):
     def __init__(self, model,
             field_values=None, none_p=None, overwrite_defaults=None,
             constraints=None, follow_fk=None, generate_fk=None,
-            follow_m2m=None, generate_m2m=None, create_image=False):
+            follow_m2m=None, generate_m2m=None):
         '''
         Parameters:
             ``model``: A model class which is used to create the test data.
@@ -183,8 +183,6 @@ class AutoFixtureBase(object):
         self.field_values = Values(self.__class__.field_values)
         self.field_values += Values(field_values)
         self.constraints = constraints or []
-        self.create_image = create_image
-
         if none_p is not None:
             self.none_p = none_p
         if overwrite_defaults is not None:
@@ -219,9 +217,6 @@ class AutoFixtureBase(object):
             self.generate_m2m = generate_m2m
         if not isinstance(self.generate_m2m, Link):
             self.generate_m2m = Link(self.generate_m2m)
-
-        if create_image:
-            self.field_to_generator[ImageField] = generators.ImageGenerator
 
         for constraint in self.default_constraints:
             self.add_constraint(constraint)
@@ -389,10 +384,7 @@ class AutoFixtureBase(object):
                     max_value=field.MAX_BIGINT,
                     **kwargs)
         if isinstance(field, ImageField):
-            if self.create_image:
-                return generators.ImageGenerator(storage=field.storage, **kwargs)
-            else:
-                return generators.ExistingImageGenerator
+            return generators.ImageGenerator(storage=field.storage, **kwargs)
         for field_class, generator in self.field_to_generator.items():
             if isinstance(field, field_class):
                 return generator(**kwargs)
